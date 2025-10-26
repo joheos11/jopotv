@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "name": "JopoTv by joheos11",
   "description": "Addon Stremio para ver Tv en español por joheos11.",
-  "resources": ["stream"],
+  "resources": ["catalog", "stream"],
   "types": ["tv"],
-  "catalogs": [],
+  "catalogs": [
+    {
+      "type": "tv",
+      "id": "ace_channels",
+      "name": "AceStream Channels"
+    }
+  ],
   "idPrefixes": ["iptv", "acestream"],
   "behaviorHints": {
     "configurable": true,
