@@ -1,62 +1,69 @@
-const { addonBuilder } = require("stremio-addon-sdk");
-const axios = require("axios");
+const { addonBuilder, serveHTTP } = require('stremio-addon-sdk');
+const fetch = require('node-fetch');
 
-// Tu lista M3U principal (puedes adaptarlo para varias):
+// URL de tu lista m3u (puedes cambiarla fácilmente)
 const M3U_URL = "https://ipfs.io/ipns/k2k4r8oqlcjxsritt5mczkcn4mmvcmymbqw7113fz2flkrerfwfps004/data/listas/lista_iptv.m3u";
 
-let m3uCache = {};
+// Función para leer y parsear canales AceStream de tu lista m3u
+async function getChannelsFromM3U(url) {
+    const response = await fetch(url);
+    const m3u = await response.text();
 
-async function parseM3U(url) {
-    const res = await axios.get(url);
-    const lines = res.data.split('\n');
-    let currentTitle = '';
-    let currentLogo = '';
-    let streams = [];
-    
-    lines.forEach(line => {
+    const canales = [];
+    const lines = m3u.split('\n');
+    let currentName = "";
+    for (let line of lines) {
         if (line.startsWith('#EXTINF')) {
-            const titleMatch = line.match(/,(.*)$/);
-            currentTitle = titleMatch ? titleMatch[1].trim() : '';
-            const logoMatch = line.match(/tvg-logo="([^"]+)"/);
-            currentLogo = logoMatch ? logoMatch[1] : '';
-        } else if (line.startsWith('http') || line.startsWith('acestream')) {
-            streams.push({ title: currentTitle, url: line.trim(), logo: currentLogo });
-            currentTitle = '';
-            currentLogo = '';
+            // Extrae el nombre del canal
+            const match = line.match(/#EXTINF:-1.*,(.*)/);
+            if (match) currentName = match[1].trim();
         }
-    });
-    return streams;
+        if (line.startsWith('acestream://')) {
+            canales.push({
+                name: currentName || "AceStream",
+                url: line.trim()
+            });
+        }
+    }
+    return canales;
 }
 
 const builder = new addonBuilder({
-    id: "org.joheos11.acestreamiptv",
-    version: "1.0.0",
-    name: "AceStream IPTV by joheos11",
-    description: "Addon Stremio – canales IPTV via AceStream/Proxy .m3u.",
-    resources: ["stream"],
-    types: ["tv"],
-    catalogs: [],
-    idPrefixes: [ "iptv", "acestream" ]
+    id: 'org.jopotvaddon',
+    version: '1.0.0',
+    name: 'JopoTv by joheos11',
+    catalogs: [{ type: 'tv', id: 'ace_channels', name: "AceStream Channels" }],
+    resources: ['catalog', 'stream'],
+    types: ['tv'],
+    idPrefixes: ['ace'],
 });
 
-builder.defineStreamHandler(async ({type, id}) => {
-    if (!m3uCache[M3U_URL]) {
-        m3uCache[M3U_URL] = await parseM3U(M3U_URL);
+builder.defineCatalogHandler(async function(args) {
+    if (args.type === 'tv') {
+        const canales = await getChannelsFromM3U(M3U_URL);
+        return {
+            metas: canales.map((canal, i) => ({
+                id: 'ace_' + i,
+                name: canal.name,
+                type: 'tv',
+                poster: '', // Puedes agregar logos aquí si tienes
+            }))
+        };
     }
-    const streams = m3uCache[M3U_URL];
-    // Busca el canal cuyo título coincida (puedes adaptar a id único)
-    const canal = streams.find(s => s.title.toLowerCase() === id.toLowerCase());
-    if (!canal) return { streams: [] };
-
-    return {
-        streams: [
-            {
-                title: canal.title,
-                url: canal.url,
-                ...(canal.logo ? {icon: canal.logo} : {})
-            }
-        ]
-    };
+    return { metas: [] };
 });
 
-module.exports = builder.getInterface();
+builder.defineStreamHandler(async function(args) {
+    const canales = await getChannelsFromM3U(M3U_URL);
+    const idx = parseInt(args.id.replace('ace_', ''));
+    if (canales[idx]) {
+        return {
+            streams: [{
+                url: canales[idx].url // AceStream URL
+            }]
+        };
+    }
+    return { streams: [] };
+});
+
+serveHTTP(builder.getInterface(), { port: process.env.PORT || 7000 });
