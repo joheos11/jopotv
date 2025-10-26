@@ -66,4 +66,5 @@ builder.defineStreamHandler(async function(args) {
     return { streams: [] };
 });
 
-serveHTTP(builder.getInterface(), { port: process.env.PORT || 7000 });
+const handler = builder.getInterface();
+module.exports = (req, res) => handler(req, res);
