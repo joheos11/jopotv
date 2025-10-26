@@ -1,10 +1,8 @@
-const { addonBuilder, serveHTTP } = require('stremio-addon-sdk');
+const { addonBuilder } = require('stremio-addon-sdk');
 const fetch = require('node-fetch');
 
-// URL de tu lista m3u (puedes cambiarla fácilmente)
 const M3U_URL = "https://ipfs.io/ipns/k2k4r8oqlcjxsritt5mczkcn4mmvcmymbqw7113fz2flkrerfwfps004/data/listas/lista_iptv.m3u";
 
-// Función para leer y parsear canales AceStream de tu lista m3u
 async function getChannelsFromM3U(url) {
     const response = await fetch(url);
     const m3u = await response.text();
@@ -14,7 +12,6 @@ async function getChannelsFromM3U(url) {
     let currentName = "";
     for (let line of lines) {
         if (line.startsWith('#EXTINF')) {
-            // Extrae el nombre del canal
             const match = line.match(/#EXTINF:-1.*,(.*)/);
             if (match) currentName = match[1].trim();
         }
@@ -46,7 +43,7 @@ builder.defineCatalogHandler(async function(args) {
                 id: 'ace_' + i,
                 name: canal.name,
                 type: 'tv',
-                poster: '', // Puedes agregar logos aquí si tienes
+                poster: '',
             }))
         };
     }
@@ -59,12 +56,13 @@ builder.defineStreamHandler(async function(args) {
     if (canales[idx]) {
         return {
             streams: [{
-                url: canales[idx].url // AceStream URL
+                url: canales[idx].url
             }]
         };
     }
     return { streams: [] };
 });
 
+// EXPORTACIÓN PARA VERCEL:
 const handler = builder.getInterface();
 module.exports = (req, res) => handler(req, res);
