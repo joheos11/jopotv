@@ -1,0 +1,14 @@
+{
+  "name": "stremio-acestream-addon",
+  "version": "1.0.0",
+  "description": "Addon Stremio para IPTV/AceStream",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "stremio-addon-sdk": "^1.1.12",
+    "axios": "^1.6.8"
+  },
+  "license": "MIT"
+}
