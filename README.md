@@ -74,14 +74,6 @@ Ejemplo rápido con Vercel:
 
 ---
 
-## Nota sobre beamup
-
-beamup fue una herramienta usada históricamente para publicar addons de Stremio. Actualmente puede no estar disponible desde npm o requerir instalación desde GitHub. No es estrictamente necesario: lo importante es tener un `manifest.json` accesible públicamente por HTTPS.
-
-Si quieres que intente instalar y usar `beamup` desde el repositorio oficial, puedo hacerlo, pero puede requerir: acceso a Git (auth), o instalar desde HTTPS/SSH según tu configuración.
-
----
-
 ## Cómo añadir el addon en Stremio (resumen)
 
 1. Obtén la URL pública de tu `manifest.json` (despliegue o ngrok).
