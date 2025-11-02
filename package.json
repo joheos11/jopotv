@@ -1,11 +1,10 @@
 {
-  "name": "stremio-addon-JopoTv",
-  "version": "0.0.1",
-  "description": "Complemento con contenido exclusivo de Televisión, Películas, Series y Documentales. Todo el contenido está disponible de forma gratuita, este complemento no aloja ningún contenido propio. Agradecimientos a los que alojan cada uno de los contenidos.",
-  "scripts": {
-    "start": "node server.js"
-  },
+  "name": "jopotv",
+  "version": "1.0.0",
+  "main": "index.js",
   "dependencies": {
-    "stremio-addon-sdk": "^1.6.10"
+    "axios": "^1.6.2",
+    "m3u8-parser": "^4.2.0",
+    "stremio-addon-sdk": "^0.7.1"
   }
 }
