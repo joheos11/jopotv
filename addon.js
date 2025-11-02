@@ -1,29 +1,8 @@
 const { addonBuilder } = require("stremio-addon-sdk")
 
-// Docs: https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/manifest.md
-const manifest = {
-	"id": "community.JopoTv",
-	"version": "0.0.1",
-	"catalogs": [
-		{
-			"type": "movie",
-			"id": "top"
-		}
-	],
-	"resources": [
-		"catalog",
-		"stream",
-		"meta"
-	],
-	"types": [
-		"movie",
-		"series",
-		"channel",
-		"tv"
-	],
-	"name": "JopoTv",
-	"description": "Complemento con contenido exclusivo de Televisión, Películas, Series y Documentales. Todo el contenido está disponible de forma gratuita, este complemento no aloja ningún contenido propio. Agradecimientos a los que alojan cada uno de los contenidos."
-}
+// Load manifest from the canonical static file to avoid duplication
+// (we keep a single source of truth in public/manifest.json)
+const manifest = require("./public/manifest.json")
 const builder = new addonBuilder(manifest)
 
 builder.defineCatalogHandler(({type, id, extra}) => {
