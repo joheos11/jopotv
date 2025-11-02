@@ -13,7 +13,7 @@ builder.defineCatalogHandler(({type, id, extra}) => {
 			id: "tt1254207",
 			type: "movie",
 			name: "The Big Buck Bunny",
-			poster: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Big_buck_bunny_poster_big.jpg/220px-Big_buck_bunny_poster_big.jpg"
+			poster: "https://peach.blender.org/wp-content/uploads/bbb-splash.png"
 		}
 	] })
 })
@@ -29,7 +29,7 @@ builder.defineStreamHandler(({type, id}) => {
 	// Docs: https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/requests/defineStreamHandler.md
 	if (type === "movie" && id === "tt1254207") {
 		// serve one stream to big buck bunny
-		const stream = { url: "http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4" }
+		const stream = { url: "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_h264.mov" }
 		return Promise.resolve({ streams: [stream] })
 	}
 
