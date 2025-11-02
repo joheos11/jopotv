@@ -1,40 +1,85 @@
 const { addonBuilder } = require("stremio-addon-sdk")
+const fetch = require('node-fetch')
+const Parser = require('m3u8-parser')
 
 // Load manifest from the canonical static file to avoid duplication
 // (we keep a single source of truth in public/manifest.json)
 const manifest = require("./public/manifest.json")
 const builder = new addonBuilder(manifest)
 
-builder.defineCatalogHandler(({type, id, extra}) => {
-	console.log("request for catalogs: "+type+" "+id)
-	// Docs: https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/requests/defineCatalogHandler.md
-	return Promise.resolve({ metas: [
-		{
-			id: "tt1254207",
-			type: "movie",
-			name: "The Big Buck Bunny",
-			poster: "https://peach.blender.org/wp-content/uploads/bbb-splash.png"
-		}
-	] })
+async function getChannels() {
+    try {
+        const response = await fetch('https://www.tdtchannels.com/lists/tv.m3u8')
+        const m3u8Content = await response.text()
+        
+        const parser = new Parser()
+        parser.push(m3u8Content)
+        parser.end()
+
+        return parser.manifest.segments.map((segment, index) => {
+            const name = segment.uri.split('/').pop().split('.')[0]
+            return {
+                id: `channel_${index}`,
+                type: "tv",
+                name: segment.title || name,
+                poster: "https://www.tdtchannels.com/favicon.png",
+                stream: segment.uri
+            }
+        })
+    } catch (error) {
+        console.error('Error fetching channels:', error)
+        return []
+    }
+}
+
+builder.defineCatalogHandler(async ({type, id}) => {
+    console.log("request for catalogs: "+type+" "+id)
+    if (type === "tv") {
+        const channels = await getChannels()
+        return Promise.resolve({ metas: channels.map(channel => ({
+            id: channel.id,
+            type: "tv",
+            name: channel.name,
+            poster: channel.poster
+        }))})
+    }
+    return Promise.resolve({ metas: [] })
 })
 
-builder.defineMetaHandler(({type, id}) => {
-	console.log("request for meta: "+type+" "+id)
-	// Docs: https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/requests/defineMetaHandler.md
-	return Promise.resolve({ meta: null })
+builder.defineMetaHandler(async ({type, id}) => {
+    console.log("request for meta: "+type+" "+id)
+    if (type === "tv") {
+        const channels = await getChannels()
+        const channel = channels.find(ch => ch.id === id)
+        if (channel) {
+            return Promise.resolve({
+                meta: {
+                    id: channel.id,
+                    type: "tv",
+                    name: channel.name,
+                    poster: channel.poster
+                }
+            })
+        }
+    }
+    return Promise.resolve({ meta: null })
 })
 
-builder.defineStreamHandler(({type, id}) => {
-	console.log("request for streams: "+type+" "+id)
-	// Docs: https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/requests/defineStreamHandler.md
-	if (type === "movie" && id === "tt1254207") {
-		// serve one stream to big buck bunny
-		const stream = { url: "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_h264.mov" }
-		return Promise.resolve({ streams: [stream] })
-	}
-
-	// otherwise return no streams
-	return Promise.resolve({ streams: [] })
+builder.defineStreamHandler(async ({type, id}) => {
+    console.log("request for streams: "+type+" "+id)
+    if (type === "tv") {
+        const channels = await getChannels()
+        const channel = channels.find(ch => ch.id === id)
+        if (channel) {
+            return Promise.resolve({
+                streams: [{
+                    url: channel.stream,
+                    title: channel.name
+                }]
+            })
+        }
+    }
+    return Promise.resolve({ streams: [] })
 })
 
 module.exports = builder.getInterface()

@@ -5,26 +5,14 @@
   "description": "Proporciona catálogos y streams para películas, series, listas de TV y deportes.",
   "logo": "https://i.postimg.cc/0jZqB5Rj/Jopo-Tv.png",
   "resources": ["catalog","meta","stream"],
-  "types": ["movie","series","channel"],
-  "idPrefixes": ["aio_","tt"],
+  "types": ["tv"],
+  "idPrefixes": ["channel_"],
   "catalogs": [
     {
-      "type": "movie",
-      "id": "aio_movies",
-      "name": "Películas AIO",
-      "extraSupported": ["search"]
-    },
-    {
-      "type": "series",
-      "id": "aio_series",
-      "name": "Series AIO",
-      "extraSupported": ["search"]
-    },
-    {
-      "type": "channel",
-      "id": "aio_tv_sports",
-      "name": "TV y Deportes en Vivo",
-      "extraSupported": ["search"]
+      "type": "tv",
+      "id": "tv_channels",
+      "name": "Canales TDT",
+      "extraSupported": []
     }
   ]
 }
